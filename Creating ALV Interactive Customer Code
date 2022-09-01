@@ -1,10 +1,10 @@
-Report ZALV_INTERACTIVE_CUSTOMER
-Developed by : Josiah Mutuma
-Initiated by: Josiah Mutuma
-Description: To display Customer, sales order header, sales item data
-Date: 17/05/2022
+*& Report ZALV_INTERACTIVE_CUSTOMER
+*& Developed by : Josiah Mutuma
+*& *& *& Initiated by: Josiah Mutuma
+*& *& Description: To display Customer, sales order header, sales item data
+*& Date: 17/05/2022
 
-REPORT ZALV_INTERACTIVE_CUSTOMER
+REPORT ZALV_INTERACTIVE_CUSTOMER.
 ****Structure declaration
 types: BEGIN OF ty_knal,
 kunnr TYPE kunnr,                   "Customer Number
@@ -57,7 +57,7 @@ select kunnr
   TABLE it_it_knal
   WHERE kunnr in so_kunnr
 
-   delete it_knal WHERE kunnr is INITIAL.    "Deletes places where there are blank values
+delete it_knal WHERE kunnr is INITIAL.    "Deletes places where there are blank values
 
 ********Fieldcatalog designing
 clear wa_fcat.
