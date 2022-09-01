@@ -1,0 +1,119 @@
+Report ZALV_INTERACTIVE_CUSTOMER
+Developed by : Josiah Mutuma
+Initiated by: Josiah Mutuma
+Description: To display Customer, sales order header, sales item data
+Date: 17/05/2022
+
+REPORT ZALV_INTERACTIVE_CUSTOMER
+****Structure declaration
+types: BEGIN OF ty_knal,
+kunnr TYPE kunnr,                   "Customer Number
+land1 type land1_gp,                "Customer Country
+name1 TYPE name1_gp,                "Customer Name
+ort01 TYPE ort01_gp,                "Customer City
+END OF ty_knal
+
+BEGIN OF ty_vbak,
+vbeln1 TYPE vbeln_va,               "Sales Order Number
+erdat TYPE erdat,                   "Date
+erzet TYPE erzet,                   "Time
+ernam TYPE ernam,                   "Person
+END OF ty_vbak.
+
+BEGIN OF ty_vbap,
+vbeln TYPE vbeln_va,               "Sales Order Number
+posnr TYPE posnr_va,               "Sales Document Item
+matnr TYPE matnr,                  "Material
+matwa TYPE matwa,                  "Material entered
+netwr TYPE netwr_ap,               "Net value
+END OF ty_vbap.
+
+*******Creating Internal table and work area and variable declaration
+data: it_knal TYPE TABLE OF ty_knal
+         wa_knal TYPE ty_knal
+          it_vbakt TYPE TABLE OF ty_vbak
+          wa_vbak TYPE ty_vbak
+          it_vbap TYPE TABLE OF ty_vbap,
+          wa_vbap TYPE ty_vbap,
+          lv_kunnr TYPE kunnr,
+          it_fcat TYPE slis_t_fieldcat_alv,
+          wa_fcat TYPE slis_fieldcat_alv,
+          wa_layo TYPE slis_layout_alv,
+          IT_LIST TYPE SLIS_T_LISTHEADER,
+          WA_LIST TYPE SLIS_LISTHEADER,
+          LV_TOTAL TYPE I.
+
+***********Selection screen designing
+SELECTION SCREEN BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-001.
+SELECT OPTIONS: SO_KUNNR FOR LV_KUNNR.
+SELECTION-SCREEN END OF BLOCK B1.
+
+***********Fetching data
+select kunnr
+          land1
+          name1
+          ort01
+  from knal into
+  TABLE it_it_knal
+  WHERE kunnr in so_kunnr
+
+   delete it_knal WHERE kunnr is INITIAL.    "Deletes places where there are blank values
+
+********Fieldcatalog designing
+clear wa_fcat.
+wa_fcat-COL_POS ='1'.
+wa_fcat-FIELDNAME = 'KUNNR'.
+wa_fcat-NO_ZERO = 'X'              "Eliminates zeros from customer number
+wa_fcat-HOTSPOT = 'X'.             "Highlighting column
+WA_FCAT-SELTEXT_L = 'Customer Number'.
+APPEND wa_fcat to it_fcat.
+
+clear wa_fcat.
+wa_fcat-COL_POS ='2'.
+wa_fcat-FIELDNAME = 'LAND1'.
+WA_FCAT-SELTEXT_L = 'Customer Country'.
+APPEND wa_fcat to it_fcat.
+
+clear wa_fcat.
+wa_fcat-COL_POS ='3'.
+wa_fcat-FIELDNAME = 'NAME1'.
+WA_FCAT-SELTEXT_L = 'Customer Name'.
+APPEND wa_fcat to it_fcat.
+
+clear wa_fcat.
+wa_fcat-COL_POS ='4'.
+wa_fcat-FIELDNAME = 'ORT01'.
+WA_FCAT-SELTEXT_L = 'Customer city'.
+APPEND wa_fcat to it_fcat.
+
+wa_layo-COLWIDTH_OPTIMIZE = 'X'
+
+************* Displaying the data
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+EXPORTING
+   I_CALLBACK_PROGRAM   = sy-repid                 "System variable which captures current report name
+   I_CALLBACK_TOP_OF_PAGE    = 'TOP_OF_PAGE'       "Printing Header
+   IS_LAYOUT    = wa_layo
+   IT_FIELDCAT           = it_fcat
+TABLES
+  T_OUTTAB               = it_knal
+
+FORM TOP_OF_PAGE.
+
+DESCRIBE TABLE it_knal LINES LV_TOTAL.
+clear wa_list.
+WA_LIST-TYP = 'H'.
+WA_LIST-INFO = 'Customer Data'.
+APPEND wa_list to it_list
+
+clear wa_list.
+WA_LIST-TYP = 'S'.
+WA_LIST-KEY = 'Number of records : '.                "Prints number of records at the top
+WA_LIST-INFO = lv_total.
+APPEND wa_list to it_list
+
+CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'
+   EXPORTING
+   IT_LIST_COMMENTARY        =  IT_LIST.
+
+ENDFORM
